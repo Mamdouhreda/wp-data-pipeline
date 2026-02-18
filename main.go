@@ -4,13 +4,38 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"main/db"
 	"net/http"
+	"os"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
+	"google.golang.org/genai"
 )
 
 func main() {
+	//load the Gemini AI here 
+	ctx := context.Background()
+	_ = godotenv.Load(".env")
+	clientgemini, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey: os.Getenv("GENAI_API_KEY"),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+    result, err := clientgemini.Models.GenerateContent(
+        ctx,
+        "gemini-3-flash-preview",
+        genai.Text("Explain how AI works in a few words"),
+        nil,
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println(result.Text())
+
+
 	// Load environment variables from secret file (if present)
 	_ = godotenv.Load(".env.mongo")
 

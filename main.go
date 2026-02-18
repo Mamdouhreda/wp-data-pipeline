@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"main/db"
 	"net/http"
-
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -15,7 +14,7 @@ func main() {
 	// Load environment variables from secret file (if present)
 	_ = godotenv.Load(".env.mongo")
 
-	url := "https://www.nasa.gov/wp-json/wp/v2/posts?per_page=15"
+	url := "https://www.nasa.gov/wp-json/wp/v2/posts"
 
 	// get back the response code
 	res, err := http.Get(url)

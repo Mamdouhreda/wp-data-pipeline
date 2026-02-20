@@ -3,32 +3,44 @@ package agent
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
-	"github.com/joho/godotenv"
-	"google.golang.org/genai"
+
+	openai "github.com/openai/openai-go"
+	"github.com/openai/openai-go/option"
 )
 
-func agent(text string){
-//load the Gemini AI here 
-ctx := context.Background()
-_ = godotenv.Load(".env")
-clientgemini, err := genai.NewClient(ctx, &genai.ClientConfig{
-	APIKey: os.Getenv("GENAI_API_KEY"),
-})
-if err != nil {
-	log.Fatal(err)
+type GroqAgent struct {
+	client openai.Client  // value, not pointer
 }
 
-result, err := clientgemini.Models.GenerateContent(
-	ctx,
-	"gemini-3-flash-preview",
-	genai.Text(text),
-	nil,
-)
-if err != nil {
-	log.Fatal(err)
-}
-fmt.Println(result.Text())
+func NewGroqAgent(apiKey string) (*GroqAgent, error) {
+	if apiKey == "" {
+		return nil, fmt.Errorf("GROQ_API_KEY is required")
+	}
+
+	client := openai.NewClient(
+		option.WithAPIKey(apiKey),
+		option.WithBaseURL("https://api.groq.com/openai/v1"),
+	)
+
+	return &GroqAgent{client: client}, nil  // now works
 }
 
+func (g *GroqAgent) Enhance(text string) (string, error) {
+	ctx := context.Background()
+
+	resp, err := g.client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
+		Model: "llama-3.3-70b-versatile",
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.UserMessage(text),
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if len(resp.Choices) == 0 {
+		return "", fmt.Errorf("no response from Groq")
+	}
+
+	return resp.Choices[0].Message.Content, nil
+}

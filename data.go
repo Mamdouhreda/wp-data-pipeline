@@ -22,6 +22,6 @@ type Post struct {
 	ID      int    `json:"id"`
 	  Link    string `json:"link"`
 	Title   Rendered `json:"title"`
-	// Content Rendered `json:"content"`
+	Content Rendered `json:"content"`
 	Image   ImageFile `json:"featured_image"`
 }
